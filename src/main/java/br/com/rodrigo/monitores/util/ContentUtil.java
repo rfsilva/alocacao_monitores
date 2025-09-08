@@ -90,6 +90,9 @@ public final class ContentUtil {
     }
 
     public static GrupoVO obterGrupo(List<GrupoVO> grupos, String nomeGrupo) {
+        if (nomeGrupo == null || "".equals(nomeGrupo)) {
+            return null;
+        }
         List<GrupoVO> found = grupos.stream().filter(s -> s.getNome().equalsIgnoreCase(nomeGrupo)).toList();
         if (found != null && found.size() > 0) {
             return found.get(0);

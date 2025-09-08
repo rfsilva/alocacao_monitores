@@ -8,6 +8,7 @@ import org.apache.poi.xssf.usermodel.*;
 
 import java.io.*;
 import java.nio.file.*;
+import java.time.*;
 import java.util.*;
 
 public final class ReportBuilder {
@@ -130,9 +131,10 @@ public final class ReportBuilder {
         // Cabeçalho
         Row header = sheet.createRow(0);
         header.createCell(0).setCellValue("Monitor");
-        header.createCell(1).setCellValue("Sala");
-        header.createCell(2).setCellValue("Turno");
-        header.createCell(3).setCellValue("Atividades");
+        header.createCell(1).setCellValue("Carga Horária");
+        header.createCell(2).setCellValue("Sala");
+        header.createCell(3).setCellValue("Turno");
+        header.createCell(4).setCellValue("Atividades");
 
         for (Cell cell : header) {
             cell.setCellStyle(headerStyle);
@@ -140,15 +142,20 @@ public final class ReportBuilder {
 
         int rowIdx = 1;
         for (Map.Entry<String, List<String[]>> entry : monitorMap.entrySet()) {
-            String monitor = entry.getKey();
+            String nomeMonitor = entry.getKey();
+            CandidatoVO monitor = null;
+            Optional<CandidatoVO> monitorOpt = monitores.stream().filter(c -> c.getNome().equals(nomeMonitor)).findFirst();
+            if (monitorOpt.isPresent()) {
+                monitor = monitorOpt.get();
+            }
             List<String[]> participacoes = entry.getValue();
 
             int monitorStartRow = rowIdx;
             for (String[] info : participacoes) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(1).setCellValue(info[0]); //Sala
-                row.createCell(2).setCellValue(info[1]); //Turno
-                row.createCell(3).setCellValue(info[2]); //Atividades
+                row.createCell(2).setCellValue(info[0]); //Sala
+                row.createCell(3).setCellValue(info[1]); //Turno
+                row.createCell(4).setCellValue(info[2]); //Atividades
             }
 
             int monitorEndRow = rowIdx - 1;
@@ -156,10 +163,12 @@ public final class ReportBuilder {
             //Mesclar células do monitor se tiver mais de um turno
             if (participacoes.size() > 1) {
                 sheet.addMergedRegion(new CellRangeAddress(monitorStartRow, monitorEndRow, 0, 0)); // Monitor
+                sheet.addMergedRegion(new CellRangeAddress(monitorStartRow, monitorEndRow, 1, 1)); // Monitor
             }
 
             Row firstRow = sheet.getRow(monitorStartRow);
-            firstRow.createCell(0).setCellValue(monitor);
+            firstRow.createCell(0).setCellValue(nomeMonitor);
+            firstRow.createCell(1).setCellValue(obterCargaHoraria(monitor));
         }
 
         // Ajustar colunas
@@ -167,6 +176,19 @@ public final class ReportBuilder {
             sheet.autoSizeColumn(i);
         }
         return sheet;
+    }
+
+    private static String obterCargaHoraria(CandidatoVO monitor) {
+        long cargaHorariaMinutos = 0;
+        String cargaHoraria = "";
+        if (monitor != null) {
+            cargaHorariaMinutos = monitor.getAlocacoes().stream().mapToLong(a -> a.getTurno().obterTempoMinutos()).sum();
+            Duration duracao = Duration.ofMinutes(cargaHorariaMinutos);
+            long horas = duracao.toHours();
+            long minutos = duracao.toMinutesPart();
+            cargaHoraria = String.format("%02d:%02d", horas, minutos);
+        }
+        return cargaHoraria;
     }
 
     private static void salvarExcel(Workbook workbook, String filePath) throws Exception {
