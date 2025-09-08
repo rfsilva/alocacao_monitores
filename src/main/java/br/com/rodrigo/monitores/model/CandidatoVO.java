@@ -24,6 +24,9 @@ public class CandidatoVO implements Serializable, Comparable<CandidatoVO> {
     private String indisponibilidade;
     private String informacaoRelevante;
     private String indisponibilidadeAjustada;
+    private String strGrupo;
+
+    private GrupoVO grupo;
 
     @Builder.Default
     private List<AlocacaoVO> alocacoes = new ArrayList<>();

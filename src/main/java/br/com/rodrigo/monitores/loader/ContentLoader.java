@@ -1,6 +1,7 @@
-package br.com.rodrigo.monitores.util;
+package br.com.rodrigo.monitores.loader;
 
 import br.com.rodrigo.monitores.model.*;
+import br.com.rodrigo.monitores.util.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 
@@ -54,6 +55,7 @@ public final class ContentLoader {
                 }
 
                 String sala = ContentUtil.getStringValue(row, 1);
+                String grupo = ContentUtil.getStringValue(row, 3);
                 Integer total = ContentUtil.getIntegerValue(row, 4);
                 if (total != null && total > 0) {
                     totalMonitoresAtividade = total;
@@ -70,8 +72,10 @@ public final class ContentLoader {
                             .nome(nomeAtividade)
                             .codigo(ContentUtil.extrairCodigo(nomeAtividade))
                             .strSala(sala)
+                            .strGrupo(grupo)
                             .strHorario(conteudoHorario)
                             .sala(ContentUtil.obterSala(programacao.getSalas(), sala))
+                            .grupo(ContentUtil.obterGrupo(programacao.getGrupos(), grupo))
                             .totalMonitores(totalMonitoresAtividade)
                             .turno(turno)
                             .build();
@@ -127,11 +131,14 @@ public final class ContentLoader {
                     if (strSala != null && !"".equals(strSala)) {
                         strSala = strSala.trim();
                     }
+                    String strGrupo = "Grupo 02";
                     List<RodaConversaVO> rodas = programacao.getRodasConversa().stream().filter(r -> r.getCodigo().equals(codigoRoda)).toList();
                     if (rodas.size() == 0) {
                         RodaConversaVO rodaConversa = RodaConversaVO.builder()
                                 .codigo(codigoRoda)
                                 .strSala(strSala)
+                                .strGrupo(strGrupo)
+                                .grupo(ContentUtil.obterGrupo(programacao.getGrupos(), strGrupo))
                                 .sala(ContentUtil.obterSala(programacao.getSalas(), strSala))
                                 .turno(turno)
                                 .build();
@@ -159,6 +166,7 @@ public final class ContentLoader {
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
+                String strGrupo = ContentUtil.getStringValue(row, 11); //TODO confirmar
                 CandidatoVO candidato = CandidatoVO.builder()
                         .instanteCadastro(ContentUtil.getDateTimeValue(row, 0))
                         .email(ContentUtil.getStringValue(row, 1))
@@ -170,6 +178,8 @@ public final class ContentLoader {
                         .indisponibilidade(ContentUtil.getStringValue(row, 8))
                         .informacaoRelevante(ContentUtil.getStringValue(row, 9))
                         .indisponibilidadeAjustada(ContentUtil.getStringValue(row, 10))
+                        .strGrupo(strGrupo)
+                        .grupo(ContentUtil.obterGrupo(programacao.getGrupos(), strGrupo))
                         .build();
                 programacao.getCandidatos().add(candidato);
             }

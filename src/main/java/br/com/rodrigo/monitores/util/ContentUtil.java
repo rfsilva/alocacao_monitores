@@ -89,6 +89,18 @@ public final class ContentUtil {
         return sala;
     }
 
+    public static GrupoVO obterGrupo(List<GrupoVO> grupos, String nomeGrupo) {
+        List<GrupoVO> found = grupos.stream().filter(s -> s.getNome().equalsIgnoreCase(nomeGrupo)).toList();
+        if (found != null && found.size() > 0) {
+            return found.get(0);
+        }
+        GrupoVO grupo = GrupoVO.builder()
+                .nome(nomeGrupo)
+                .build();
+        grupos.add(grupo);
+        return grupo;
+    }
+
     public static String extrairCodigo(String nomeAtividade) {
         if (nomeAtividade != null && !"".equals(nomeAtividade)) {
             int idx = nomeAtividade.indexOf('-');

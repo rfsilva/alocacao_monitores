@@ -43,8 +43,9 @@ public final class ReportBuilder {
         Row header = sheet.createRow(0);
         header.createCell(0).setCellValue("Sala");
         header.createCell(1).setCellValue("Turno");
-        header.createCell(2).setCellValue("Total Monitores");
-        header.createCell(3).setCellValue("Monitores Selecionados");
+        header.createCell(2).setCellValue("Atividades");
+        header.createCell(3).setCellValue("Total Monitores");
+        header.createCell(4).setCellValue("Monitores Selecionados");
 
         for (Cell cell : header) {
             cell.setCellStyle(headerStyle);
@@ -64,7 +65,7 @@ public final class ReportBuilder {
                 Collections.sort(candidatos);
                 for (CandidatoVO candidato : candidatos) {
                     Row row = sheet.createRow(rowIdx++);
-                    row.createCell(3).setCellValue(candidato.getNome());
+                    row.createCell(4).setCellValue(candidato.getNome());
                 }
 
                 int alocacaoEndRow = rowIdx - 1;
@@ -77,7 +78,8 @@ public final class ReportBuilder {
 
                 Row firstAlocacaoRow = sheet.getRow(alocacaoStartRow);
                 firstAlocacaoRow.createCell(1).setCellValue(alocacao.getTurno().toString());
-                firstAlocacaoRow.createCell(2).setCellValue(alocacao.getTotalMonitores());
+                firstAlocacaoRow.createCell(2).setCellValue(alocacao.getEventos().stream().map(e -> e.toString()).toList().toString());
+                firstAlocacaoRow.createCell(3).setCellValue(alocacao.getTotalMonitores());
             }
 
             int salaEndRow = rowIdx - 1;
@@ -91,7 +93,7 @@ public final class ReportBuilder {
             firstSalaRow.createCell(0).setCellValue(sala.getNome());
         }
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             sheet.autoSizeColumn(i);
         }
         return sheet;
@@ -112,7 +114,7 @@ public final class ReportBuilder {
                 if (list == null) {
                     list = new ArrayList<>();
                 }
-                list.add(new String[]{alocacao.getSala().getNome(), alocacao.getTurno().toString()});
+                list.add(new String[]{alocacao.getSala().getNome(), alocacao.getTurno().toString(), alocacao.getEventos().stream().map(e -> e.toString()).toList().toString()});
                 monitorMap.put(monitor.getNome(), list);
             }
         }
@@ -130,6 +132,7 @@ public final class ReportBuilder {
         header.createCell(0).setCellValue("Monitor");
         header.createCell(1).setCellValue("Sala");
         header.createCell(2).setCellValue("Turno");
+        header.createCell(3).setCellValue("Atividades");
 
         for (Cell cell : header) {
             cell.setCellStyle(headerStyle);
@@ -145,6 +148,7 @@ public final class ReportBuilder {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(1).setCellValue(info[0]); //Sala
                 row.createCell(2).setCellValue(info[1]); //Turno
+                row.createCell(3).setCellValue(info[2]); //Atividades
             }
 
             int monitorEndRow = rowIdx - 1;
@@ -159,7 +163,7 @@ public final class ReportBuilder {
         }
 
         // Ajustar colunas
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 4; i++) {
             sheet.autoSizeColumn(i);
         }
         return sheet;

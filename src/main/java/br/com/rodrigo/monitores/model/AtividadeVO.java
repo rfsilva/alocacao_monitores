@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import java.io.*;
+import java.util.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,10 +22,12 @@ public class AtividadeVO implements Serializable, Evento, Comparable<Evento> {
     private String strSala;
     private String codigo;
     private String nome;
+    private String strGrupo;
     private Integer totalMonitores;
 
     private SalaVO sala;
     private TurnoVO turno;
+    private GrupoVO grupo;
 
     @Override
     public int compareTo(Evento o) {
@@ -33,8 +36,6 @@ public class AtividadeVO implements Serializable, Evento, Comparable<Evento> {
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("Código: ").append(codigo)
-                .toString();
+        return nome;
     }
 }

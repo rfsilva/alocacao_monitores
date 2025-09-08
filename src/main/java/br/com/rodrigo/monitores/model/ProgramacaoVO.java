@@ -18,6 +18,9 @@ public class ProgramacaoVO implements Serializable {
 
     @Builder.Default
     @JsonIgnore
+    private List<GrupoVO> grupos = new ArrayList<>();
+    @Builder.Default
+    @JsonIgnore
     private List<SalaVO> salas = new ArrayList<>();
     @Builder.Default
     private List<AtividadeVO> atividades = new ArrayList<>();

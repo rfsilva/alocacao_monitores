@@ -6,4 +6,5 @@ public interface Evento extends Comparable<Evento> {
     Integer getTotalMonitores();
     SalaVO getSala();
     TurnoVO getTurno();
+    GrupoVO getGrupo();
 }

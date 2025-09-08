@@ -17,9 +17,12 @@ public class RodaConversaVO implements Serializable, Evento, Comparable<Evento> 
     @JsonIgnore
     private String strSala;
 
+    private String strGrupo;
+
     @Builder.Default
     private Integer totalMonitores = 2;
 
+    private GrupoVO grupo;
     private SalaVO sala;
     private TurnoVO turno;
 
@@ -34,7 +37,6 @@ public class RodaConversaVO implements Serializable, Evento, Comparable<Evento> 
 
     @Override
     public String toString() {
-        return new StringBuilder()
-                .append("Código: ").append(codigo).toString();
+        return codigo;
     }
 }
