@@ -34,23 +34,33 @@ public final class ReportBuilder {
     private static Sheet criarAbaAlocacaoPorSala(Workbook wb, ProgramacaoVO programacao) {
         Sheet sheet = wb.createSheet("Alocacao por Sala");
 
-        // Estilo cabeçalho
-        CellStyle headerStyle = wb.createCellStyle();
-        Font headerFont = wb.createFont();
-        headerFont.setBold(true);
-        headerStyle.setFont(headerFont);
+        // --- Estilo padrão (bordas finas pretas) ---
+        CellStyle estiloBorda = wb.createCellStyle();
+        estiloBorda.setBorderTop(BorderStyle.THIN);
+        estiloBorda.setBorderBottom(BorderStyle.THIN);
+        estiloBorda.setBorderLeft(BorderStyle.THIN);
+        estiloBorda.setBorderRight(BorderStyle.THIN);
+        estiloBorda.setTopBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setRightBorderColor(IndexedColors.BLACK.getIndex());
+
+        // --- Estilo cabeçalho (bordas + fundo + negrito) ---
+        CellStyle estiloCabecalho = wb.createCellStyle();
+        estiloCabecalho.cloneStyleFrom(estiloBorda);
+        estiloCabecalho.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        estiloCabecalho.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        Font fonteCab = wb.createFont();
+        fonteCab.setBold(true);
+        estiloCabecalho.setFont(fonteCab);
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        header.createCell(0).setCellValue("Sala");
-        header.createCell(1).setCellValue("Turno");
-        header.createCell(2).setCellValue("Atividades");
-        header.createCell(3).setCellValue("Total Monitores");
-        header.createCell(4).setCellValue("Monitores Selecionados");
-
-        for (Cell cell : header) {
-            cell.setCellStyle(headerStyle);
-        }
+        createCell(header, 0, "Sala", estiloCabecalho);
+        createCell(header, 1, "Turno", estiloCabecalho);
+        createCell(header, 2, "Atividades", estiloCabecalho);
+        createCell(header, 3, "Total Monitores", estiloCabecalho);
+        createCell(header, 4, "Monitores Selecionados", estiloCabecalho);
 
         int rowIdx = 1;
         for (SalaVO sala : programacao.getSalas()) {
@@ -60,38 +70,40 @@ public final class ReportBuilder {
                 int alocacaoStartRow = rowIdx;
 
                 // Se não houver candidatos, cria pelo menos uma linha
-                List<CandidatoVO> candidatos = alocacao.getMonitores().isEmpty() ?
-                        Collections.singletonList(CandidatoVO.builder().nome("").build()) : alocacao.getMonitores();
+                List<CandidatoVO> candidatos = alocacao.getMonitores().isEmpty()
+                        ? Collections.singletonList(CandidatoVO.builder().nome("").build())
+                        : alocacao.getMonitores();
 
                 Collections.sort(candidatos);
                 for (CandidatoVO candidato : candidatos) {
                     Row row = sheet.createRow(rowIdx++);
-                    row.createCell(4).setCellValue(candidato.getNome());
+                    createCell(row, 4, candidato.getNome(), estiloBorda);
                 }
 
                 int alocacaoEndRow = rowIdx - 1;
 
                 //Mescla alocacao
                 if (alocacao.getMonitores().size() > 1) {
-                    sheet.addMergedRegion(new CellRangeAddress(alocacaoStartRow, alocacaoEndRow, 1, 1));
-                    sheet.addMergedRegion(new CellRangeAddress(alocacaoStartRow, alocacaoEndRow, 2, 2));
+                    applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 1, 1, estiloBorda);
+                    applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 2, 2, estiloBorda);
+                    applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 3, 3, estiloBorda);
                 }
 
                 Row firstAlocacaoRow = sheet.getRow(alocacaoStartRow);
-                firstAlocacaoRow.createCell(1).setCellValue(alocacao.getTurno().toString());
-                firstAlocacaoRow.createCell(2).setCellValue(alocacao.getEventos().stream().map(e -> e.toString()).toList().toString());
-                firstAlocacaoRow.createCell(3).setCellValue(alocacao.getTotalMonitores());
+                createCell(firstAlocacaoRow, 1, alocacao.getTurno().toString(), estiloBorda);
+                createCell(firstAlocacaoRow, 2, alocacao.getEventos().stream().map(e -> e.toString()).toList().toString(), estiloBorda);
+                createCell(firstAlocacaoRow, 3, alocacao.getTotalMonitores(), estiloBorda);
             }
 
             int salaEndRow = rowIdx - 1;
 
             //Mescla sala
-            if (sala.getAlocacoes().stream().mapToInt(a -> a.getMonitores().size()).sum() > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(salaStartRow, salaEndRow, 0, 0));
+            if (salaStartRow < salaEndRow) {
+                applyMergedRegionWithBorders(sheet, salaStartRow, salaEndRow, 0, 0, estiloBorda);
             }
 
             Row firstSalaRow = sheet.getRow(salaStartRow);
-            firstSalaRow.createCell(0).setCellValue(sala.getNome());
+            createCell(firstSalaRow, 0, sala.getNome(), estiloBorda);
         }
 
         for (int i = 0; i < 5; i++) {
@@ -122,6 +134,27 @@ public final class ReportBuilder {
 
         Sheet sheet = wb.createSheet("Alocacao por Monitor");
 
+        // --- Estilo padrão (bordas finas pretas) ---
+        CellStyle estiloBorda = wb.createCellStyle();
+        estiloBorda.setBorderTop(BorderStyle.THIN);
+        estiloBorda.setBorderBottom(BorderStyle.THIN);
+        estiloBorda.setBorderLeft(BorderStyle.THIN);
+        estiloBorda.setBorderRight(BorderStyle.THIN);
+        estiloBorda.setTopBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setRightBorderColor(IndexedColors.BLACK.getIndex());
+
+        // --- Estilo cabeçalho ---
+        CellStyle estiloCabecalho = wb.createCellStyle();
+        estiloCabecalho.cloneStyleFrom(estiloBorda); // mantém as bordas
+        estiloCabecalho.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        estiloCabecalho.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        Font fonteCabecalho = wb.createFont();
+        fonteCabecalho.setBold(true);
+        estiloCabecalho.setFont(fonteCabecalho);
+
         // Estilo cabeçalho
         CellStyle headerStyle = wb.createCellStyle();
         Font headerFont = wb.createFont();
@@ -130,15 +163,11 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        header.createCell(0).setCellValue("Monitor");
-        header.createCell(1).setCellValue("Carga Horária");
-        header.createCell(2).setCellValue("Sala");
-        header.createCell(3).setCellValue("Turno");
-        header.createCell(4).setCellValue("Atividades");
-
-        for (Cell cell : header) {
-            cell.setCellStyle(headerStyle);
-        }
+        createCell(header, 0, "Monitor", estiloCabecalho);
+        createCell(header, 1, "Carga Horária", estiloCabecalho);
+        createCell(header, 2, "Sala", estiloCabecalho);
+        createCell(header, 3, "Turno", estiloCabecalho);
+        createCell(header, 4, "Atividade(s)", estiloCabecalho);
 
         int rowIdx = 1;
         for (Map.Entry<String, List<String[]>> entry : monitorMap.entrySet()) {
@@ -153,29 +182,76 @@ public final class ReportBuilder {
             int monitorStartRow = rowIdx;
             for (String[] info : participacoes) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(2).setCellValue(info[0]); //Sala
-                row.createCell(3).setCellValue(info[1]); //Turno
-                row.createCell(4).setCellValue(info[2]); //Atividades
+                createCell(row, 2, info[0], estiloBorda); //Sala
+                createCell(row, 3, info[1], estiloBorda); //Turno
+                createCell(row, 4, info[2], estiloBorda); //Atividade
             }
 
             int monitorEndRow = rowIdx - 1;
 
             //Mesclar células do monitor se tiver mais de um turno
             if (participacoes.size() > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(monitorStartRow, monitorEndRow, 0, 0)); // Monitor
-                sheet.addMergedRegion(new CellRangeAddress(monitorStartRow, monitorEndRow, 1, 1)); // Monitor
+                applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 0, 0, estiloBorda); //Monitor
+                applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 1, 1, estiloBorda); //Carga horária
             }
 
             Row firstRow = sheet.getRow(monitorStartRow);
-            firstRow.createCell(0).setCellValue(nomeMonitor);
-            firstRow.createCell(1).setCellValue(obterCargaHoraria(monitor));
+            createCell(firstRow, 0, nomeMonitor, estiloBorda);
+            createCell(firstRow, 1, obterCargaHoraria(monitor), estiloBorda);
         }
 
         // Ajustar colunas
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 5; i++) {
             sheet.autoSizeColumn(i);
         }
         return sheet;
+    }
+
+    private static void createCell(Row row, int col, String value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    private static void createCell(Row row, int col, Integer value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    /**
+     * Cria a região mesclada, aplica bordas via RegionUtil e define o CellStyle
+     * em todas as células da região para garantir que a borda apareça corretamente.
+     */
+    private static void applyMergedRegionWithBorders(Sheet sheet,
+                                                     int firstRow, int lastRow,
+                                                     int firstCol, int lastCol,
+                                                     CellStyle style) {
+        CellRangeAddress region = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
+        sheet.addMergedRegion(region);
+
+        // aplica bordas na região (usando RegionUtil)
+        RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+        RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
+        RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
+
+        short black = IndexedColors.BLACK.getIndex();
+        RegionUtil.setTopBorderColor(black, region, sheet);
+        RegionUtil.setBottomBorderColor(black, region, sheet);
+        RegionUtil.setLeftBorderColor(black, region, sheet);
+        RegionUtil.setRightBorderColor(black, region, sheet);
+
+        // garante que cada célula visível/invisível dentro da região tenha o estilo
+        for (int r = region.getFirstRow(); r <= region.getLastRow(); r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) row = sheet.createRow(r);
+            for (int c = region.getFirstColumn(); c <= region.getLastColumn(); c++) {
+                Cell cell = row.getCell(c);
+                if (cell == null) cell = row.createCell(c);
+                cell.setCellStyle(style);
+            }
+        }
     }
 
     private static String obterCargaHoraria(CandidatoVO monitor) {
