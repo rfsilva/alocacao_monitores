@@ -293,4 +293,17 @@ public final class ContentUtil {
         }
         return builder.toString();
     }
+
+    public static String listarString(List<String> content) {
+        StringBuilder builder = new StringBuilder();
+        int idx = 0;
+        for (String c : content) {
+            if (idx > 0) {
+                builder.append(", ");
+            }
+            builder.append(c);
+            idx++;
+        }
+        return builder.toString();
+    }
 }

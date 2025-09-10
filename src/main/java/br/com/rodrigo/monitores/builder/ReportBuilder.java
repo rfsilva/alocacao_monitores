@@ -27,9 +27,11 @@ public final class ReportBuilder {
         Sheet monitoresSheet = criarAbaAlocacaoPorMonitor(wb, programacao);
         Sheet candidatosSemAlocacao = criarAbaMonitoresSemAlocacao(wb, programacao);
         Sheet monitoresNaoConsiderados = criarAbaMonitorNaoConsiderado(wb, programacao);
+        Sheet programacaoOriginalSheet = criarAbaProgramacaoOriginal(wb, programacao);
+        List<Sheet> rodasConversaSheetList = criarAbasProgramacaoRodasConversa(wb, programacao);
 
         try {
-            salvarExcel(wb, CAMINHO_RELATORIO + LocalDateTime.now().format(DateTimeFormatter.ofPattern("_ddMMyyyy_HHmmss")) + ".xlsx");
+            ReportUtil.salvarExcel(wb, CAMINHO_RELATORIO + LocalDateTime.now().format(DateTimeFormatter.ofPattern("_ddMMyyyy_HHmmss")) + ".xlsx");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,11 +66,11 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        Cell cellComentario = createCell(header, 0, "Sala", estiloCabecalho);
-        createCell(header, 1, "Período", estiloCabecalho);
-        createCell(header, 2, "Atividade(s)", estiloCabecalho);
-        createCell(header, 3, "Total - Ideal (Alocado)", estiloCabecalho);
-        createCell(header, 4, "Monitores Selecionados", estiloCabecalho);
+        Cell cellComentario = ReportUtil.createCell(header, 0, "Sala", estiloCabecalho);
+        ReportUtil.createCell(header, 1, "Período", estiloCabecalho);
+        ReportUtil.createCell(header, 2, "Atividade(s)", estiloCabecalho);
+        ReportUtil.createCell(header, 3, "Total - Ideal (Alocado)", estiloCabecalho);
+        ReportUtil.createCell(header, 4, "Monitores Selecionados", estiloCabecalho);
 
         String comentario = "Lista de alocação de monitores (aprovados e confirmados) por sala / período.";
         adicionarComentario(wb, sheet, cellComentario, comentario);
@@ -92,22 +94,22 @@ public final class ReportBuilder {
                     if (candidato.getGrupo() != null) {
                         content = candidato.getNome() + " (" + candidato.getGrupo().getNome() + ")";
                     }
-                    createCell(row, 4, content, estiloBorda);
+                    ReportUtil.createCell(row, 4, content, estiloBorda);
                 }
 
                 int alocacaoEndRow = rowIdx - 1;
 
                 //Mescla alocacao
                 if (alocacao.getMonitores().size() > 1) {
-                    applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 1, 1, estiloBorda);
-                    applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 2, 2, estiloBordaQuebraLinha);
-                    applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 3, 3, estiloBorda);
+                    ReportUtil.applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 1, 1, estiloBorda);
+                    ReportUtil.applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 2, 2, estiloBordaQuebraLinha);
+                    ReportUtil.applyMergedRegionWithBorders(sheet, alocacaoStartRow, alocacaoEndRow, 3, 3, estiloBorda);
                 }
 
                 Row firstAlocacaoRow = sheet.getRow(alocacaoStartRow);
-                createCell(firstAlocacaoRow, 1, alocacao.getTurno().toString(), estiloBorda);
-                createCell(firstAlocacaoRow, 2, ContentUtil.toStringList(alocacao.getEventos().stream().map(e -> (e.toString() + " (" + e.getGrupo().getNome() + ")")).toList()), estiloBorda);
-                createCell(firstAlocacaoRow, 3, alocacao.getTotalMonitores() + " (" + alocacao.getMonitores().size() + ")", estiloBorda);
+                ReportUtil.createCell(firstAlocacaoRow, 1, alocacao.getTurno().toString(), estiloBorda);
+                ReportUtil.createCell(firstAlocacaoRow, 2, ContentUtil.toStringList(alocacao.getEventos().stream().map(e -> (e.toString() + " (" + e.getGrupo().getNome() + ")")).toList()), estiloBorda);
+                ReportUtil.createCell(firstAlocacaoRow, 3, alocacao.getTotalMonitores() + " (" + alocacao.getMonitores().size() + ")", estiloBorda);
                 firstAlocacaoRow.setHeight((short) -1);
             }
 
@@ -115,11 +117,11 @@ public final class ReportBuilder {
 
             //Mescla sala
             if (salaStartRow < salaEndRow) {
-                applyMergedRegionWithBorders(sheet, salaStartRow, salaEndRow, 0, 0, estiloBorda);
+                ReportUtil.applyMergedRegionWithBorders(sheet, salaStartRow, salaEndRow, 0, 0, estiloBorda);
             }
 
             Row firstSalaRow = sheet.getRow(salaStartRow);
-            createCell(firstSalaRow, 0, sala.getNome(), estiloBorda);
+            ReportUtil.createCell(firstSalaRow, 0, sala.getNome(), estiloBorda);
         }
 
         for (int i = 0; i < 5; i++) {
@@ -183,12 +185,12 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        Cell cellComentario = createCell(header, 0, "Monitor", estiloCabecalho);
-        createCell(header, 1, "Grupo", estiloCabecalho);
-        createCell(header, 2, "Carga Horária", estiloCabecalho);
-        createCell(header, 3, "Sala", estiloCabecalho);
-        createCell(header, 4, "Período", estiloCabecalho);
-        createCell(header, 5, "Atividade(s)", estiloCabecalho);
+        Cell cellComentario = ReportUtil.createCell(header, 0, "Monitor", estiloCabecalho);
+        ReportUtil.createCell(header, 1, "Grupo", estiloCabecalho);
+        ReportUtil.createCell(header, 2, "Carga Horária", estiloCabecalho);
+        ReportUtil.createCell(header, 3, "Sala", estiloCabecalho);
+        ReportUtil.createCell(header, 4, "Período", estiloCabecalho);
+        ReportUtil.createCell(header, 5, "Atividade(s)", estiloCabecalho);
 
         String comentario = "Lista de alocação de monitores (aprovados e confirmados) por nome de monitor.";
         adicionarComentario(wb, sheet, cellComentario, comentario);
@@ -206,9 +208,9 @@ public final class ReportBuilder {
             int monitorStartRow = rowIdx;
             for (String[] info : participacoes) {
                 Row row = sheet.createRow(rowIdx++);
-                createCell(row, 3, info[0], estiloBorda); //Sala
-                createCell(row, 4, info[1], estiloBorda); //Turno
-                createCell(row, 5, info[2], estiloBorda); //Atividade
+                ReportUtil.createCell(row, 3, info[0], estiloBorda); //Sala
+                ReportUtil.createCell(row, 4, info[1], estiloBorda); //Turno
+                ReportUtil.createCell(row, 5, info[2], estiloBorda); //Atividade
                 row.setHeight((short) -1);
             }
 
@@ -216,15 +218,15 @@ public final class ReportBuilder {
 
             //Mesclar células do monitor se tiver mais de um turno
             if (participacoes.size() > 1) {
-                applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 0, 0, estiloBorda); //Monitor
-                applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 1, 1, estiloBorda); //Grupo
-                applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 2, 2, estiloBorda); //Carga horária
+                ReportUtil.applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 0, 0, estiloBorda); //Monitor
+                ReportUtil.applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 1, 1, estiloBorda); //Grupo
+                ReportUtil.applyMergedRegionWithBorders(sheet, monitorStartRow, monitorEndRow, 2, 2, estiloBorda); //Carga horária
             }
 
             Row firstRow = sheet.getRow(monitorStartRow);
-            createCell(firstRow, 0, monitor.getNome(), estiloBorda);
-            createCell(firstRow, 1, monitor.getGrupo().getNome(), estiloBorda);
-            createCell(firstRow, 2, obterCargaHoraria(monitor), estiloBorda);
+            ReportUtil.createCell(firstRow, 0, monitor.getNome(), estiloBorda);
+            ReportUtil.createCell(firstRow, 1, monitor.getGrupo().getNome(), estiloBorda);
+            ReportUtil.createCell(firstRow, 2, obterCargaHoraria(monitor), estiloBorda);
         }
 
         // Ajustar colunas
@@ -274,14 +276,14 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        Cell cellComentario = createCell(header, 0, "Data Preenchimento", estiloCabecalho);
-        createCell(header, 1, "Nome", estiloCabecalho);
-        createCell(header, 2, "Grupo", estiloCabecalho);
-        createCell(header, 3, "E-mail", estiloCabecalho);
-        createCell(header, 4, "Inscrição Minicurso/Oficina", estiloCabecalho);
-        createCell(header, 5, "Apresenta em RC", estiloCabecalho);
-        createCell(header, 6, "Roda(s) de Conversa", estiloCabecalho);
-        createCell(header, 7, "Indisponibilidade informada", estiloCabecalho);
+        Cell cellComentario = ReportUtil.createCell(header, 0, "Data Preenchimento", estiloCabecalho);
+        ReportUtil.createCell(header, 1, "Nome", estiloCabecalho);
+        ReportUtil.createCell(header, 2, "Grupo", estiloCabecalho);
+        ReportUtil.createCell(header, 3, "E-mail", estiloCabecalho);
+        ReportUtil.createCell(header, 4, "Inscrição Minicurso/Oficina", estiloCabecalho);
+        ReportUtil.createCell(header, 5, "Apresenta em RC", estiloCabecalho);
+        ReportUtil.createCell(header, 6, "Roda(s) de Conversa", estiloCabecalho);
+        ReportUtil.createCell(header, 7, "Indisponibilidade informada", estiloCabecalho);
 
         String comentario = "Lista de monitores aprovados e com cadastro confirmado, mas que não tiveram alocação atribuída.";
         adicionarComentario(wb, sheet, cellComentario, comentario);
@@ -291,14 +293,14 @@ public final class ReportBuilder {
                 && c.getAlocacoes().size() == 0).toList();
         for (CandidatoVO candidato : candidatos) {
             Row row = sheet.createRow(rowIdx++);
-            createCell(row, 0, candidato.getInstanteCadastro(), estiloDataHora);
-            createCell(row, 1, candidato.getNome(), estiloBorda);
-            createCell(row, 2, candidato.getStrGrupo(), estiloBorda);
-            createCell(row, 3, candidato.getEmail1(), estiloBorda);
-            createCell(row, 4, candidato.getInscricaoCursoOficina(), estiloBorda);
-            createCell(row, 5, candidato.getApresentaTrabalho().toString(), estiloBorda);
-            createCell(row, 6, candidato.getRodasConversa(), estiloBorda);
-            createCell(row, 7, candidato.getIndisponibilidade(), estiloBorda);
+            ReportUtil.createCell(row, 0, candidato.getInstanteCadastro(), estiloDataHora);
+            ReportUtil.createCell(row, 1, candidato.getNome(), estiloBorda);
+            ReportUtil.createCell(row, 2, candidato.getStrGrupo(), estiloBorda);
+            ReportUtil.createCell(row, 3, candidato.getEmail1(), estiloBorda);
+            ReportUtil.createCell(row, 4, candidato.getInscricaoCursoOficina(), estiloBorda);
+            ReportUtil.createCell(row, 5, candidato.getApresentaTrabalho().toString(), estiloBorda);
+            ReportUtil.createCell(row, 6, candidato.getRodasConversa(), estiloBorda);
+            ReportUtil.createCell(row, 7, candidato.getIndisponibilidade(), estiloBorda);
         }
 
         // Ajustar colunas
@@ -348,9 +350,9 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        Cell cellComentario = createCell(header, 0, "Nome", estiloCabecalho);
-        createCell(header, 1, "E-mail", estiloCabecalho);
-        createCell(header, 2, "Grupo", estiloCabecalho);
+        Cell cellComentario = ReportUtil.createCell(header, 0, "Nome", estiloCabecalho);
+        ReportUtil.createCell(header, 1, "E-mail", estiloCabecalho);
+        ReportUtil.createCell(header, 2, "Grupo", estiloCabecalho);
 
         String comentario = "Lista de monitores aprovados (planilha programação - aba 'Monitores aprovados'), mas que não realizaram o preenchimento do formulário de confirmação.";
         adicionarComentario(wb, sheet, cellComentario, comentario);
@@ -360,9 +362,9 @@ public final class ReportBuilder {
                 && m.getGrupo() != null && !"".equals(m.getGrupo())).toList();
         for (MonitorAprovadoVO monitor : monitores) {
             Row row = sheet.createRow(rowIdx++);
-            createCell(row, 0, monitor.getNome(), estiloBorda);
-            createCell(row, 1, monitor.getEmail(), estiloBorda);
-            createCell(row, 2, monitor.getGrupo(), estiloBorda);
+            ReportUtil.createCell(row, 0, monitor.getNome(), estiloBorda);
+            ReportUtil.createCell(row, 1, monitor.getEmail(), estiloBorda);
+            ReportUtil.createCell(row, 2, monitor.getGrupo(), estiloBorda);
         }
 
         // Ajustar colunas
@@ -372,61 +374,77 @@ public final class ReportBuilder {
         return sheet;
     }
 
-    private static Cell createCell(Row row, int col, String value, CellStyle style) {
-        Cell cell = row.createCell(col);
-        cell.setCellValue(value);
-        cell.setCellStyle(style);
-        return cell;
-    }
+    private static Sheet criarAbaProgramacaoOriginal(Workbook wb, ProgramacaoVO programacao) {
 
-    private static Cell createCell(Row row, int col, Integer value, CellStyle style) {
-        Cell cell = row.createCell(col);
-        cell.setCellValue(value);
-        cell.setCellStyle(style);
-        return cell;
-    }
+        Sheet sheet = wb.createSheet("Monitoria na Programação");
+        SheetDuplicator.copySheet(programacao.getProgramacaoSheet(), sheet, wb);
 
-    private static Cell createCell(Row row, int col, LocalDateTime value, CellStyle style) {
-        Date date = Date.from(value.atZone(ZoneId.systemDefault()).toInstant());
-        Cell cell = row.createCell(col);
-        cell.setCellValue(date);
-        cell.setCellStyle(style);
-        return cell;
-    }
+        List<AlocacaoVO> alocacoes = programacao.getSalas().stream().flatMap(s -> s.getAlocacoes().stream()).toList();
+        Iterator<Row> rowIt = sheet.rowIterator();
+        while (rowIt.hasNext()) {
+            Row row = rowIt.next();
+            try {
+                Cell monitorCell = row.getCell(4);
+                Cell hashCell = row.getCell(5);
+                if (monitorCell != null && hashCell != null) {
+                    String hash = hashCell.getStringCellValue();
 
-    /**
-     * Cria a região mesclada, aplica bordas via RegionUtil e define o CellStyle
-     * em todas as células da região para garantir que a borda apareça corretamente.
-     */
-    private static void applyMergedRegionWithBorders(Sheet sheet,
-                                                     int firstRow, int lastRow,
-                                                     int firstCol, int lastCol,
-                                                     CellStyle style) {
-        CellRangeAddress region = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
-        sheet.addMergedRegion(region);
+                    if (!ContentUtil.estaVazio(hash) && hash.length() == 36) {
+                        AtividadeVO atividade = AtividadeVO.builder().id(UUID.fromString(hash)).build();
+                        Optional<AlocacaoVO> alocacaoOpt = alocacoes.stream().filter(a -> a.getEventos().contains(atividade)).findFirst();
 
-        // aplica bordas na região (usando RegionUtil)
-        RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
-        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
-        RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
-        RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
-
-        short black = IndexedColors.BLACK.getIndex();
-        RegionUtil.setTopBorderColor(black, region, sheet);
-        RegionUtil.setBottomBorderColor(black, region, sheet);
-        RegionUtil.setLeftBorderColor(black, region, sheet);
-        RegionUtil.setRightBorderColor(black, region, sheet);
-
-        // garante que cada célula visível/invisível dentro da região tenha o estilo
-        for (int r = region.getFirstRow(); r <= region.getLastRow(); r++) {
-            Row row = sheet.getRow(r);
-            if (row == null) row = sheet.createRow(r);
-            for (int c = region.getFirstColumn(); c <= region.getLastColumn(); c++) {
-                Cell cell = row.getCell(c);
-                if (cell == null) cell = row.createCell(c);
-                cell.setCellStyle(style);
+                        if (alocacaoOpt.isPresent()) {
+                            AlocacaoVO alocacao = alocacaoOpt.get();
+                            String listaMonitores = ContentUtil.listarString(alocacao.getMonitores().stream().map(m -> m.getNome()).toList());
+                            monitorCell.setCellValue(listaMonitores);
+                            hashCell.setCellValue("");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
+        return sheet;
+    }
+
+    private static List<Sheet> criarAbasProgramacaoRodasConversa(Workbook wb, ProgramacaoVO programacao) {
+
+        List<Sheet> sheetList = new ArrayList<>();
+        for (Map.Entry<TurnoVO, Sheet> entry : programacao.getPlanilhasRodasConversa().entrySet()) {
+            Sheet sheetOriginal = entry.getValue();
+
+            Sheet sheet = wb.createSheet(sheetOriginal.getSheetName());
+            SheetDuplicator.copySheet(sheetOriginal, sheet, wb);
+            sheetList.add(sheet);
+
+            List<AlocacaoVO> alocacoes = programacao.getSalas().stream().flatMap(s -> s.getAlocacoes().stream()).toList();
+            Iterator<Row> rowIt = sheet.rowIterator();
+            while (rowIt.hasNext()) {
+                Row row = rowIt.next();
+                try {
+                    Cell monitorCell = row.getCell(6);
+                    if (monitorCell != null) {
+                        String hash = monitorCell.getStringCellValue();
+
+                        if (!ContentUtil.estaVazio(hash) && hash.length() == 36) {
+                            RodaConversaVO rodaConversa = RodaConversaVO.builder().id(UUID.fromString(hash)).build();
+                            Optional<AlocacaoVO> alocacaoOpt = alocacoes.stream().filter(a -> a.getEventos().contains(rodaConversa)).findFirst();
+
+                            if (alocacaoOpt.isPresent()) {
+                                AlocacaoVO alocacao = alocacaoOpt.get();
+                                String listaMonitores = ContentUtil.listarString(alocacao.getMonitores().stream().map(m -> m.getNome()).toList());
+                                monitorCell.setCellValue(listaMonitores);
+                            }
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sheetList;
     }
 
     private static String obterCargaHoraria(CandidatoVO monitor) {
@@ -440,22 +458,6 @@ public final class ReportBuilder {
             cargaHoraria = String.format("%02d:%02d", horas, minutos);
         }
         return cargaHoraria;
-    }
-
-    private static void salvarExcel(Workbook workbook, String filePath) throws Exception {
-        Path path = Paths.get(filePath).toAbsolutePath();
-        Path parent = path.getParent();
-        if (parent != null) {
-            Files.createDirectories(parent); // garante todas as pastas
-        }
-
-        // cria/gera o arquivo (substitui se já existir)
-        try (OutputStream os = Files.newOutputStream(
-                path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-            workbook.write(os);
-        } finally {
-            workbook.close(); // importante fechar o workbook
-        }
     }
 
     private static void adicionarComentario(Workbook wb, Sheet sheet, Cell cell, String comentario) {

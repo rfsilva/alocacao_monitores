@@ -1,5 +1,6 @@
 package br.com.rodrigo.monitores.loader;
 
+import br.com.rodrigo.monitores.builder.*;
 import br.com.rodrigo.monitores.model.*;
 import br.com.rodrigo.monitores.util.*;
 import org.apache.poi.ss.usermodel.*;
@@ -7,6 +8,7 @@ import org.apache.poi.xssf.usermodel.*;
 
 import java.io.*;
 import java.time.*;
+import java.time.format.*;
 import java.util.*;
 
 public final class ContentLoader {
@@ -101,8 +103,10 @@ public final class ContentLoader {
                         .turno(turno)
                         .build();
                 programacao.getAtividades().add(atividade);
+                ReportUtil.createCell(row, 5, atividade.getId().toString());
             }
         }
+        programacao.setProgramacaoSheet(sheet);
     }
 
     private static void carregarGrupos(Workbook workbook, ProgramacaoVO programacao) {
@@ -153,6 +157,7 @@ public final class ContentLoader {
                     .build();
             turno3.setPeriodo(ContentUtil.classificarPeriodo(turno3));
             planilhas.put(turno3, workbook.getSheet("RC 37-43"));
+            programacao.setPlanilhasRodasConversa(planilhas);
 
             for (TurnoVO turno : planilhas.keySet()) {
                 Sheet sheet = planilhas.get(turno);
@@ -186,6 +191,19 @@ public final class ContentLoader {
                                 .turno(turno)
                                 .build();
                         programacao.getRodasConversa().add(rodaConversa);
+                        Cell cell = row.getCell(6);
+                        if (cell == null) {
+                            ReportUtil.createCell(row, 6, rodaConversa.getId().toString());
+                        } else {
+                            cell.setCellValue(rodaConversa.getId().toString());
+                        }
+                    } else {
+                        Cell cell = row.getCell(6);
+                        if (cell == null) {
+                            ReportUtil.createCell(row, 6, rodas.get(0).getId().toString());
+                        } else {
+                            cell.setCellValue(rodas.get(0).getId().toString());
+                        }
                     }
                 }
             }

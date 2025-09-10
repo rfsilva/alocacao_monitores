@@ -3,6 +3,7 @@ package br.com.rodrigo.monitores.model;
 import br.com.rodrigo.monitores.util.*;
 import com.fasterxml.jackson.annotation.*;
 import lombok.*;
+import org.apache.poi.ss.usermodel.*;
 
 import java.io.*;
 import java.time.*;
@@ -31,6 +32,11 @@ public class ProgramacaoVO implements Serializable {
     private List<CandidatoVO> candidatos = new ArrayList<>();
     @Builder.Default
     private List<MonitorAprovadoVO> monitoresAprovados = new ArrayList<>();
+
+    private Sheet programacaoSheet;
+
+    @Builder.Default
+    private Map<TurnoVO, Sheet> planilhasRodasConversa = new LinkedHashMap<>();
 
     public void atrelarDados() {
         atividades.stream().forEach(a -> a.getSala().getAtividades().add(a));
