@@ -127,6 +127,7 @@ public final class ContentLoader {
                     .grupo(grupo)
                     .build());
         }
+        Collections.sort(programacao.getMonitoresAprovados());
     }
 
     public static void carregarRodasConversa(ProgramacaoVO programacao) {

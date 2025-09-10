@@ -262,15 +262,21 @@ public final class ContentUtil {
     public static MonitorAprovadoVO encontrarMonitor(List<MonitorAprovadoVO> monitorList, CandidatoVO candidato) {
         Optional<MonitorAprovadoVO> opt1 = monitorList.stream().filter(m -> m.getEmail().equalsIgnoreCase(candidato.getEmail1())).findFirst();
         if (opt1.isPresent()) {
-            return opt1.get();
+            MonitorAprovadoVO monitor = opt1.get();
+            monitor.setParticipacaoConfirmada(true);
+            return monitor;
         }
         Optional<MonitorAprovadoVO> opt2 = monitorList.stream().filter(m -> m.getEmail().equalsIgnoreCase(candidato.getEmail2())).findFirst();
         if (opt2.isPresent()) {
-            return opt2.get();
+            MonitorAprovadoVO monitor = opt2.get();
+            monitor.setParticipacaoConfirmada(true);
+            return monitor;
         }
         Optional<MonitorAprovadoVO> opt3 = monitorList.stream().filter(m -> m.getNome().equalsIgnoreCase(candidato.getNome())).findFirst();
         if (opt3.isPresent()) {
-            return opt3.get();
+            MonitorAprovadoVO monitor = opt3.get();
+            monitor.setParticipacaoConfirmada(true);
+            return monitor;
         }
         return null;
     }

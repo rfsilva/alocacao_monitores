@@ -76,7 +76,7 @@ public class MonitoresServiceImpl implements MonitoresService {
         alocacoesRestantes = alocacoes.stream().filter(a -> a.getTotalMonitores() > a.getMonitores().size()).toList();
         if (!respeitarGrupoCandidato) {
             //Passo 6. É desespero que fala? Bumba-meu-boi, tenta atribuir candidatos nas alocações restantes
-            //Critérios: indisponibilidade do candidato
+            //Critérios: disponibilidade do candidato
             atribuirCandidatosAtividadesRestantes(alocacoesRestantes, candidatos);
         }
 
@@ -210,7 +210,7 @@ public class MonitoresServiceImpl implements MonitoresService {
     private void atribuirCandidatosAtividadesRestantes(List<AlocacaoVO> alocacoes, List<CandidatoVO> candidatos) {
 
         //Passo 6. É desespero que fala? Bumba-meu-boi, tenta atribuir candidatos nas alocações restantes
-        //Critérios: indisponibilidade do candidato
+        //Critérios: disponibilidade do candidato
         alocacoes.stream().forEach(a -> {
             //Alocações que ainda não possuem o total de monitores
             List<CandidatoVO> candidatosDisponiveis = candidatos.stream().filter(c -> !ContentUtil.isConcorrente(c.getTurnosIndisponibilidade(), a.getTurno())).toList();

@@ -26,6 +26,7 @@ public final class ReportBuilder {
         Sheet salasSheet = criarAbaAlocacaoPorSala(wb, programacao);
         Sheet monitoresSheet = criarAbaAlocacaoPorMonitor(wb, programacao);
         Sheet candidatosSemAlocacao = criarAbaMonitoresSemAlocacao(wb, programacao);
+        Sheet monitoresNaoConsiderados = criarAbaMonitorNaoConsiderado(wb, programacao);
 
         try {
             salvarExcel(wb, CAMINHO_RELATORIO + LocalDateTime.now().format(DateTimeFormatter.ofPattern("_ddMMyyyy_HHmmss")) + ".xlsx");
@@ -63,11 +64,14 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        createCell(header, 0, "Sala", estiloCabecalho);
-        createCell(header, 1, "Turno", estiloCabecalho);
+        Cell cellComentario = createCell(header, 0, "Sala", estiloCabecalho);
+        createCell(header, 1, "Período", estiloCabecalho);
         createCell(header, 2, "Atividade(s)", estiloCabecalho);
-        createCell(header, 3, "Total Monitores", estiloCabecalho);
+        createCell(header, 3, "Total - Ideal (Alocado)", estiloCabecalho);
         createCell(header, 4, "Monitores Selecionados", estiloCabecalho);
+
+        String comentario = "Lista de alocação de monitores (aprovados e confirmados) por sala / período.";
+        adicionarComentario(wb, sheet, cellComentario, comentario);
 
         int rowIdx = 1;
         for (SalaVO sala : programacao.getSalas()) {
@@ -103,7 +107,7 @@ public final class ReportBuilder {
                 Row firstAlocacaoRow = sheet.getRow(alocacaoStartRow);
                 createCell(firstAlocacaoRow, 1, alocacao.getTurno().toString(), estiloBorda);
                 createCell(firstAlocacaoRow, 2, ContentUtil.toStringList(alocacao.getEventos().stream().map(e -> (e.toString() + " (" + e.getGrupo().getNome() + ")")).toList()), estiloBorda);
-                createCell(firstAlocacaoRow, 3, alocacao.getTotalMonitores(), estiloBorda);
+                createCell(firstAlocacaoRow, 3, alocacao.getTotalMonitores() + " (" + alocacao.getMonitores().size() + ")", estiloBorda);
                 firstAlocacaoRow.setHeight((short) -1);
             }
 
@@ -179,12 +183,15 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        createCell(header, 0, "Monitor", estiloCabecalho);
+        Cell cellComentario = createCell(header, 0, "Monitor", estiloCabecalho);
         createCell(header, 1, "Grupo", estiloCabecalho);
         createCell(header, 2, "Carga Horária", estiloCabecalho);
         createCell(header, 3, "Sala", estiloCabecalho);
-        createCell(header, 4, "Turno", estiloCabecalho);
+        createCell(header, 4, "Período", estiloCabecalho);
         createCell(header, 5, "Atividade(s)", estiloCabecalho);
+
+        String comentario = "Lista de alocação de monitores (aprovados e confirmados) por nome de monitor.";
+        adicionarComentario(wb, sheet, cellComentario, comentario);
 
         int rowIdx = 1;
         for (Map.Entry<String, List<String[]>> entry : monitorMap.entrySet()) {
@@ -267,7 +274,7 @@ public final class ReportBuilder {
 
         // Cabeçalho
         Row header = sheet.createRow(0);
-        createCell(header, 0, "Data Preenchimento", estiloCabecalho);
+        Cell cellComentario = createCell(header, 0, "Data Preenchimento", estiloCabecalho);
         createCell(header, 1, "Nome", estiloCabecalho);
         createCell(header, 2, "Grupo", estiloCabecalho);
         createCell(header, 3, "E-mail", estiloCabecalho);
@@ -275,6 +282,9 @@ public final class ReportBuilder {
         createCell(header, 5, "Apresenta em RC", estiloCabecalho);
         createCell(header, 6, "Roda(s) de Conversa", estiloCabecalho);
         createCell(header, 7, "Indisponibilidade informada", estiloCabecalho);
+
+        String comentario = "Lista de monitores aprovados e com cadastro confirmado, mas que não tiveram alocação atribuída.";
+        adicionarComentario(wb, sheet, cellComentario, comentario);
 
         int rowIdx = 1;
         List<CandidatoVO> candidatos = programacao.getCandidatos().stream().filter(c -> c.getStatus().equals(Status.CONFIRMED)
@@ -298,23 +308,90 @@ public final class ReportBuilder {
         return sheet;
     }
 
-    private static void createCell(Row row, int col, String value, CellStyle style) {
+    private static Sheet criarAbaMonitorNaoConsiderado(Workbook wb, ProgramacaoVO programacao) {
+
+        Sheet sheet = wb.createSheet("Monitores Cadastro Não Confirmado");
+
+        // --- Estilo padrão (bordas finas pretas) ---
+        CellStyle estiloBorda = wb.createCellStyle();
+        estiloBorda.setBorderTop(BorderStyle.THIN);
+        estiloBorda.setBorderBottom(BorderStyle.THIN);
+        estiloBorda.setBorderLeft(BorderStyle.THIN);
+        estiloBorda.setBorderRight(BorderStyle.THIN);
+        estiloBorda.setTopBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setBottomBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setLeftBorderColor(IndexedColors.BLACK.getIndex());
+        estiloBorda.setRightBorderColor(IndexedColors.BLACK.getIndex());
+
+        // --- Estilo cabeçalho ---
+        CellStyle estiloCabecalho = wb.createCellStyle();
+        estiloCabecalho.cloneStyleFrom(estiloBorda); // mantém as bordas
+        estiloCabecalho.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        estiloCabecalho.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+        Font fonteCabecalho = wb.createFont();
+        fonteCabecalho.setBold(true);
+        estiloCabecalho.setFont(fonteCabecalho);
+
+        // Estilo cabeçalho
+        CellStyle headerStyle = wb.createCellStyle();
+        Font headerFont = wb.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+
+        CellStyle estiloDataHora = wb.createCellStyle();
+        estiloDataHora.cloneStyleFrom(estiloBorda);
+        CreationHelper createHelper = wb.getCreationHelper();
+        estiloDataHora.setDataFormat(
+                createHelper.createDataFormat().getFormat("dd/MM/yyyy HH:mm")
+        );
+
+        // Cabeçalho
+        Row header = sheet.createRow(0);
+        Cell cellComentario = createCell(header, 0, "Nome", estiloCabecalho);
+        createCell(header, 1, "E-mail", estiloCabecalho);
+        createCell(header, 2, "Grupo", estiloCabecalho);
+
+        String comentario = "Lista de monitores aprovados (planilha programação - aba 'Monitores aprovados'), mas que não realizaram o preenchimento do formulário de confirmação.";
+        adicionarComentario(wb, sheet, cellComentario, comentario);
+
+        int rowIdx = 1;
+        List<MonitorAprovadoVO> monitores = programacao.getMonitoresAprovados().stream().filter(m -> !m.getParticipacaoConfirmada()
+                && m.getGrupo() != null && !"".equals(m.getGrupo())).toList();
+        for (MonitorAprovadoVO monitor : monitores) {
+            Row row = sheet.createRow(rowIdx++);
+            createCell(row, 0, monitor.getNome(), estiloBorda);
+            createCell(row, 1, monitor.getEmail(), estiloBorda);
+            createCell(row, 2, monitor.getGrupo(), estiloBorda);
+        }
+
+        // Ajustar colunas
+        for (int i = 0; i < 2; i++) {
+            sheet.autoSizeColumn(i);
+        }
+        return sheet;
+    }
+
+    private static Cell createCell(Row row, int col, String value, CellStyle style) {
         Cell cell = row.createCell(col);
         cell.setCellValue(value);
         cell.setCellStyle(style);
+        return cell;
     }
 
-    private static void createCell(Row row, int col, Integer value, CellStyle style) {
+    private static Cell createCell(Row row, int col, Integer value, CellStyle style) {
         Cell cell = row.createCell(col);
         cell.setCellValue(value);
         cell.setCellStyle(style);
+        return cell;
     }
 
-    private static void createCell(Row row, int col, LocalDateTime value, CellStyle style) {
+    private static Cell createCell(Row row, int col, LocalDateTime value, CellStyle style) {
         Date date = Date.from(value.atZone(ZoneId.systemDefault()).toInstant());
         Cell cell = row.createCell(col);
         cell.setCellValue(date);
         cell.setCellStyle(style);
+        return cell;
     }
 
     /**
@@ -379,5 +456,25 @@ public final class ReportBuilder {
         } finally {
             workbook.close(); // importante fechar o workbook
         }
+    }
+
+    private static void adicionarComentario(Workbook wb, Sheet sheet, Cell cell, String comentario) {
+        //Cria o "drawing" que gerencia caixas de texto, comentários, etc.
+        Drawing<?> drawing = sheet.createDrawingPatriarch();
+
+        //Define a posição e tamanho do comentário (coluna inicial, linha inicial, coluna final, linha final)
+        CreationHelper factory = wb.getCreationHelper();
+        ClientAnchor anchor = factory.createClientAnchor();
+        anchor.setCol1(cell.getColumnIndex());
+        anchor.setCol2(cell.getColumnIndex() + 5);
+        anchor.setRow1(cell.getColumnIndex());
+        anchor.setRow2(cell.getColumnIndex() + 3);
+
+        //Cria o comentário
+        Comment comment = drawing.createCellComment(anchor);
+        comment.setString(factory.createRichTextString(comentario));
+        comment.setAuthor("Atribuidor de Monitores");
+        cell.setCellComment(comment);
+
     }
 }

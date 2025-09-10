@@ -1,5 +1,6 @@
 package br.com.rodrigo.monitores.model;
 
+import jdk.jfr.*;
 import lombok.*;
 
 import java.time.*;
@@ -15,15 +16,17 @@ public class MonitorAprovadoVO implements Comparable<MonitorAprovadoVO> {
     private String email;
     private String nome;
     private String grupo;
+    @Builder.Default
+    private Boolean participacaoConfirmada = false;
 
     @Override
     public String toString() {
-        return email + " - " + nome + " - " + grupo;
+        return nome + " (" + grupo + ") - " + grupo;
     }
 
     @Override
     public int compareTo(MonitorAprovadoVO o) {
-       return email.compareToIgnoreCase(o.getEmail());
+       return nome.compareToIgnoreCase(o.getNome());
     }
 
     @Override
