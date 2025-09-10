@@ -14,6 +14,8 @@ public class AlocacaoVO implements Serializable, Comparable<AlocacaoVO> {
 
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
+
     private SalaVO sala;
     private TurnoVO turno;
     private Integer totalMonitores;
@@ -36,5 +38,22 @@ public class AlocacaoVO implements Serializable, Comparable<AlocacaoVO> {
     @Override
     public int compareTo(AlocacaoVO o) {
         return -turno.compareTo(o.getTurno());
+    }
+
+    public List<GrupoVO> getGrupos() {
+        return eventos.stream().map(e -> e.getGrupo()).toList();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AlocacaoVO that = (AlocacaoVO) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

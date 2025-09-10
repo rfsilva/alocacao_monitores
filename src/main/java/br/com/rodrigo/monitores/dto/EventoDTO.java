@@ -14,6 +14,7 @@ public class EventoDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String codigo;
+    private String grupo;
     private String sala;
     private Integer totalMonitores;
 }

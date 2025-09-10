@@ -20,71 +20,112 @@ public final class ContentLoader {
 
     private static String caminhoRodasConversa = "input/rodas.xlsx";
 
-    public static void carregarSalasAtividades(ProgramacaoVO programacao) {
+    public static void carregarSalasAtividadesGrupos(ProgramacaoVO programacao) {
         try (FileInputStream fis = new FileInputStream(caminhoProgramacao)) {
             Workbook workbook = new XSSFWorkbook(caminhoProgramacao);
-            Sheet sheet = workbook.getSheet("Grupos Monitoria Sist");
 
-            Iterator<Row> rowIt = sheet.iterator();
-            LocalDate dataAtividade = null;
-            String periodoAtividade = "";
-            Integer totalMonitoresAtividade = null;
-            Integer numeroLinha = 0;
-            while (rowIt.hasNext()) {
-                numeroLinha++;
-
-                Row row = rowIt.next();
-                LocalDate data = ContentUtil.getLocalDateValue(row, 0);
-
-                if (data != null) {
-                    //Linha com a separação da data do evento
-                    dataAtividade = data;
-                    continue;
-                }
-                if (ContentUtil.isLinhaEmBranco(row)) {
-                    continue;
-                }
-                String conteudoHorario = ContentUtil.getStringValue(row, 0);
-                if ("HORÁRIO".equals(conteudoHorario) || "???".equals(conteudoHorario)) {
-                    continue;
-                }
-
-                String periodo = ContentUtil.getStringValue(row, 0);
-                if (periodo != null && !"".equals(periodo)) {
-                    periodoAtividade = periodo;
-                }
-
-                String sala = ContentUtil.getStringValue(row, 1);
-                String grupo = ContentUtil.getStringValue(row, 3);
-                Integer total = ContentUtil.getIntegerValue(row, 4);
-                if (total != null && total > 0) {
-                    totalMonitoresAtividade = total;
-                }
-                if (sala == null || "".equals(sala)) {
-                    continue;
-                }
-                sala = sala.trim();
-                String nomeAtividade = ContentUtil.getStringValue(row, 2);
-                List<TurnoVO> turnos = ContentUtil.obterTurnos(dataAtividade, periodoAtividade);
-
-                for (TurnoVO turno : turnos) {
-                    AtividadeVO atividade = AtividadeVO.builder()
-                            .nome(nomeAtividade)
-                            .codigo(ContentUtil.extrairCodigo(nomeAtividade))
-                            .strSala(sala)
-                            .strGrupo(grupo)
-                            .strHorario(conteudoHorario)
-                            .sala(ContentUtil.obterSala(programacao.getSalas(), sala))
-                            .grupo(ContentUtil.obterGrupo(programacao.getGrupos(), grupo))
-                            .totalMonitores(totalMonitoresAtividade)
-                            .turno(turno)
-                            .build();
-                    programacao.getAtividades().add(atividade);
-                }
-            }
+            carregarSalasAtividades(workbook, programacao);
+            carregarGrupos(workbook, programacao);
             workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void carregarSalasAtividades(Workbook workbook, ProgramacaoVO programacao) {
+
+        Sheet sheet = workbook.getSheet("Grupos Monitoria Sist");
+
+        Iterator<Row> rowIt = sheet.iterator();
+        LocalDate dataAtividade = null;
+        String periodoAtividade = "";
+        Integer totalMonitoresAtividade = null;
+        Integer numeroLinha = 0;
+        String strGrupo = "";
+        while (rowIt.hasNext()) {
+            numeroLinha++;
+
+            Row row = rowIt.next();
+            LocalDate data = ContentUtil.getLocalDateValue(row, 0);
+
+            if (data != null) {
+                //Linha com a separação da data do evento
+                dataAtividade = data;
+                strGrupo = "";
+                continue;
+            }
+            if (ContentUtil.isLinhaEmBranco(row)) {
+                strGrupo = "";
+                continue;
+            }
+            String conteudoHorario = ContentUtil.getStringValue(row, 0);
+            if ("HORÁRIO".equals(conteudoHorario) || "???".equals(conteudoHorario)) {
+                strGrupo = "";
+                continue;
+            }
+
+            String periodo = ContentUtil.getStringValue(row, 0);
+            if (periodo != null && !"".equals(periodo)) {
+                periodoAtividade = periodo;
+            }
+
+            String strSala = ContentUtil.getStringValue(row, 1);
+            String grupoAtividade = ContentUtil.getStringValue(row, 3);
+            if (grupoAtividade != null && !"".equals(grupoAtividade)) {
+                grupoAtividade = grupoAtividade.trim();
+                strGrupo = grupoAtividade;
+            }
+            Integer total = ContentUtil.getIntegerValue(row, 4);
+            if (total != null && total > 0) {
+                totalMonitoresAtividade = total;
+            }
+            if (strSala == null || "".equals(strSala)) {
+                continue;
+            }
+            strSala = strSala.trim();
+            String nomeAtividade = ContentUtil.getStringValue(row, 2);
+            List<TurnoVO> turnos = ContentUtil.obterTurnos(dataAtividade, periodoAtividade);
+
+            System.out.println("Atividade: " + nomeAtividade + ", Grupo: " + strGrupo);
+            for (TurnoVO turno : turnos) {
+                AtividadeVO atividade = AtividadeVO.builder()
+                        .id(UUID.randomUUID())
+                        .nome(nomeAtividade)
+                        .codigo(ContentUtil.extrairCodigo(nomeAtividade))
+                        .strSala(strSala)
+                        .strGrupo(strGrupo)
+                        .strHorario(conteudoHorario)
+                        .sala(ContentUtil.obterSala(programacao.getSalas(), strSala))
+                        .grupo(ContentUtil.obterGrupo(programacao.getGrupos(), strGrupo))
+                        .totalMonitores(totalMonitoresAtividade)
+                        .turno(turno)
+                        .build();
+                programacao.getAtividades().add(atividade);
+            }
+        }
+    }
+
+    private static void carregarGrupos(Workbook workbook, ProgramacaoVO programacao) {
+
+        Sheet sheet = workbook.getSheet("Monitores aprovados");
+
+        Iterator<Row> rowIt = sheet.iterator();
+        if (rowIt.hasNext()) {
+            //Cabeçalho
+            rowIt.next();
+        }
+
+        while (rowIt.hasNext()) {
+            Row row = rowIt.next();
+
+            String email = ContentUtil.getStringValue(row, 0);
+            String nome = ContentUtil.getStringValue(row, 1);
+            String grupo = ContentUtil.getStringValue(row, 2);
+            programacao.getMonitoresAprovados().add(MonitorAprovadoVO.builder()
+                    .email(email)
+                    .nome(nome)
+                    .grupo(grupo)
+                    .build());
         }
     }
 
@@ -135,6 +176,7 @@ public final class ContentLoader {
                     List<RodaConversaVO> rodas = programacao.getRodasConversa().stream().filter(r -> r.getCodigo().equals(codigoRoda)).toList();
                     if (rodas.size() == 0) {
                         RodaConversaVO rodaConversa = RodaConversaVO.builder()
+                                .id(UUID.randomUUID())
                                 .codigo(codigoRoda)
                                 .strSala(strSala)
                                 .strGrupo(strGrupo)
@@ -166,11 +208,16 @@ public final class ContentLoader {
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-                String strGrupo = ContentUtil.getStringValue(row, 11); //TODO confirmar
+                String nomeCandidato = ContentUtil.getStringValue(row, 3);
+                if (nomeCandidato != null && !"".equals(nomeCandidato)) {
+                    nomeCandidato = nomeCandidato.trim();
+                }
                 CandidatoVO candidato = CandidatoVO.builder()
+                        .id(UUID.randomUUID())
                         .instanteCadastro(ContentUtil.getDateTimeValue(row, 0))
-                        .email(ContentUtil.getStringValue(row, 1))
-                        .nome(ContentUtil.getStringValue(row, 3))
+                        .email1(ContentUtil.getStringValue(row, 1))
+                        .email2(ContentUtil.getStringValue(row, 2))
+                        .nome(nomeCandidato)
                         .status(Status.converter(ContentUtil.getStringValue(row, 4)))
                         .inscricaoCursoOficina(ContentUtil.getStringValue(row, 5))
                         .apresentaTrabalho(NaoSim.converter(ContentUtil.getStringValue(row, 6)))
@@ -178,9 +225,18 @@ public final class ContentLoader {
                         .indisponibilidade(ContentUtil.getStringValue(row, 8))
                         .informacaoRelevante(ContentUtil.getStringValue(row, 9))
                         .indisponibilidadeAjustada(ContentUtil.getStringValue(row, 10))
-                        .strGrupo(strGrupo)
-                        .grupo(ContentUtil.obterGrupo(programacao.getGrupos(), strGrupo))
                         .build();
+                MonitorAprovadoVO monitorAprovado = ContentUtil.encontrarMonitor(programacao.getMonitoresAprovados(), candidato);
+                String strGrupo = "";
+                if (monitorAprovado != null) {
+                    strGrupo = monitorAprovado.getGrupo();
+                }
+                candidato.setStrGrupo(strGrupo);
+                candidato.setGrupo(ContentUtil.obterGrupo(programacao.getGrupos(), strGrupo));
+                if (candidato.getGrupo() == null) {
+                    candidato.setGrupo(GrupoVO.builder().nome("").build());
+                }
+                System.out.println("Candidato: " + nomeCandidato + ", Status: " + candidato.getStatus() + ", Grupo: " + candidato.getGrupo() + ", Grupo: " + strGrupo);
                 programacao.getCandidatos().add(candidato);
             }
             workbook.close();

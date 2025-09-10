@@ -15,4 +15,5 @@ public class MonitorDTO implements Serializable {
 
     private String nome;
     private String email;
+    private String grupo;
 }

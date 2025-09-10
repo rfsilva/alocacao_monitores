@@ -35,14 +35,16 @@ public final class AlocacaoMapper {
         return EventoDTO.builder()
                 .codigo(input.getNome())
                 .sala(input.getSala().getNome())
+                .grupo(input.getGrupo().getNome())
                 .totalMonitores(input.getTotalMonitores())
                 .build();
     }
 
     private static MonitorDTO toDto(CandidatoVO input) {
         return MonitorDTO.builder()
-                .email(input.getEmail())
+                .email(input.getEmail1())
                 .nome(input.getNome())
+                .grupo(input.getGrupo().getNome())
                 .build();
     }
 }

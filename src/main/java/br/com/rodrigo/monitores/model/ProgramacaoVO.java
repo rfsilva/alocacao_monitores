@@ -29,6 +29,8 @@ public class ProgramacaoVO implements Serializable {
     @Builder.Default
     @JsonIgnore
     private List<CandidatoVO> candidatos = new ArrayList<>();
+    @Builder.Default
+    private List<MonitorAprovadoVO> monitoresAprovados = new ArrayList<>();
 
     public void atrelarDados() {
         atividades.stream().forEach(a -> a.getSala().getAtividades().add(a));
@@ -68,20 +70,22 @@ public class ProgramacaoVO implements Serializable {
             Collections.sort(eventos);
 
             for (Evento evento : eventos) {
-                System.out.println("\tTurno: " + evento.getTurno() + "; Evento: " + evento.getNome() + ", Total Monitores: " + evento.getTotalMonitores());
+                System.out.println("\tTurno: " + evento.getTurno() + "; Evento: " + evento.getNome() + "(" + evento.getGrupo().getNome() + "), Total Monitores: " + evento.getTotalMonitores());
 
                 AlocacaoVO alocacao = ContentUtil.obterAlocacao(sala.getAlocacoes(), evento.getTurno());
                 if (alocacao == null) {
                     //Nova alocação
-                    alocacao = new AlocacaoVO();
-                    alocacao.setSala(sala);
-                    alocacao.setTotalMonitores(evento.getTotalMonitores());
-                    alocacao.setTurno(TurnoVO.builder()
+                    alocacao = AlocacaoVO.builder()
+                            .id(UUID.randomUUID())
+                            .sala(sala)
+                            .totalMonitores(evento.getTotalMonitores())
+                            .turno(TurnoVO.builder()
                                     .dia(evento.getTurno().getDia())
                                     .inicio(evento.getTurno().getInicio())
                                     .fim(evento.getTurno().getFim())
                                     .periodo(evento.getTurno().getPeriodo())
-                            .build());
+                                    .build())
+                            .build();
                     sala.getAlocacoes().add(alocacao);
                 } else {
                     //Alocação existente - ajuste de total e intervalo
@@ -102,7 +106,7 @@ public class ProgramacaoVO implements Serializable {
                 System.out.println("\tAlocações da sala: ");
                 System.out.println("\t\tTurno: " + alocacao.getTurno() + "; Total de Monitores: " + alocacao.getTotalMonitores() + "; Eventos:");
                 for (Evento evento : alocacao.getEventos()) {
-                    System.out.println("\t\t\tEvento: " + evento.getNome());
+                    System.out.println("\t\t\tEvento: " + evento.getNome() + "(" + evento.getGrupo().getNome() + ")");
                 }
             }
         }

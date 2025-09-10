@@ -14,8 +14,10 @@ public class CandidatoVO implements Serializable, Comparable<CandidatoVO> {
 
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
     private LocalDateTime instanteCadastro;
-    private String email;
+    private String email1;
+    private String email2;
     private String nome;
     private Status status;
     private String inscricaoCursoOficina;
@@ -50,5 +52,18 @@ public class CandidatoVO implements Serializable, Comparable<CandidatoVO> {
     @Override
     public int compareTo(CandidatoVO o) {
         return nome.compareToIgnoreCase(o.getNome());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CandidatoVO that = (CandidatoVO) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

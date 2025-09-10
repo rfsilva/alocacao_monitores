@@ -14,6 +14,8 @@ public class SalaVO implements Serializable, Comparable<SalaVO> {
 
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
+
     private String nome;
 
     @Builder.Default
@@ -33,5 +35,18 @@ public class SalaVO implements Serializable, Comparable<SalaVO> {
     @Override
     public int compareTo(SalaVO o) {
         return nome.compareTo(o.getNome());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SalaVO salaVO = (SalaVO) o;
+        return Objects.equals(id, salaVO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

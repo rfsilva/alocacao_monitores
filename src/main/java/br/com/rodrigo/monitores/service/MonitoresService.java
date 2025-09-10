@@ -6,5 +6,5 @@ import br.com.rodrigo.monitores.model.*;
 import java.util.*;
 
 public interface MonitoresService {
-    List<AlocacaoDTO> distribuir();
+    List<AlocacaoDTO> distribuir(Boolean considerarGrupo);
 }

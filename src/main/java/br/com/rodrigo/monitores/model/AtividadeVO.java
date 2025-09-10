@@ -14,6 +14,7 @@ public class AtividadeVO implements Serializable, Evento, Comparable<Evento> {
 
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
     @JsonIgnore
     private Long sequencia;
     @JsonIgnore
@@ -37,5 +38,18 @@ public class AtividadeVO implements Serializable, Evento, Comparable<Evento> {
     @Override
     public String toString() {
         return nome;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AtividadeVO that = (AtividadeVO) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

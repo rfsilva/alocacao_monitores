@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import java.io.*;
+import java.util.*;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,6 +14,7 @@ public class RodaConversaVO implements Serializable, Evento, Comparable<Evento> 
 
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
     private String codigo;
     @JsonIgnore
     private String strSala;
@@ -38,5 +40,18 @@ public class RodaConversaVO implements Serializable, Evento, Comparable<Evento> 
     @Override
     public String toString() {
         return codigo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RodaConversaVO that = (RodaConversaVO) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

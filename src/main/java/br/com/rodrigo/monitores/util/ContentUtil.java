@@ -83,6 +83,7 @@ public final class ContentUtil {
             return found.get(0);
         }
         SalaVO sala = SalaVO.builder()
+                .id(UUID.randomUUID())
                 .nome(nomeSala)
                 .build();
         salas.add(sala);
@@ -98,6 +99,7 @@ public final class ContentUtil {
             return found.get(0);
         }
         GrupoVO grupo = GrupoVO.builder()
+                .id(UUID.randomUUID())
                 .nome(nomeGrupo)
                 .build();
         grupos.add(grupo);
@@ -130,7 +132,11 @@ public final class ContentUtil {
 
     public static String getStringValue(Row row, Integer index) {
         try {
-            return row.getCell(index).getStringCellValue();
+            String content = row.getCell(index).getStringCellValue();
+            if (content != null) {
+                content = content.trim();
+            }
+            return content;
         } catch (Exception e) {
             return null;
         }
@@ -249,10 +255,36 @@ public final class ContentUtil {
     private static final int CARGA_HORARIA_MINIMA_MINUTOS = 8 * 60;
 
     public static boolean estaComCargaHorariaCompleta(CandidatoVO candidato) {
-        int total = 0;
-        for (AlocacaoVO alocacao : candidato.getAlocacoes()) {
-            total += alocacao.getTurno().obterTempoMinutos().intValue();
-        }
+        int total = candidato.getAlocacoes().stream().mapToInt(a -> a.getTurno().obterTempoMinutos().intValue()).sum();
         return total >= CARGA_HORARIA_MINIMA_MINUTOS;
+    }
+
+    public static MonitorAprovadoVO encontrarMonitor(List<MonitorAprovadoVO> monitorList, CandidatoVO candidato) {
+        Optional<MonitorAprovadoVO> opt1 = monitorList.stream().filter(m -> m.getEmail().equalsIgnoreCase(candidato.getEmail1())).findFirst();
+        if (opt1.isPresent()) {
+            return opt1.get();
+        }
+        Optional<MonitorAprovadoVO> opt2 = monitorList.stream().filter(m -> m.getEmail().equalsIgnoreCase(candidato.getEmail2())).findFirst();
+        if (opt2.isPresent()) {
+            return opt2.get();
+        }
+        Optional<MonitorAprovadoVO> opt3 = monitorList.stream().filter(m -> m.getNome().equalsIgnoreCase(candidato.getNome())).findFirst();
+        if (opt3.isPresent()) {
+            return opt3.get();
+        }
+        return null;
+    }
+
+    public static String toStringList(List<String> content) {
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        for (String s : content) {
+            if (i > 0) {
+                builder.append('\n');
+            }
+            builder.append(s);
+            i++;
+        }
+        return builder.toString();
     }
 }

@@ -13,7 +13,11 @@ import java.util.*;
 public class GrupoVO implements Serializable, Comparable<GrupoVO> {
 
     private static final long serialVersionUID = 1L;
+
+    private UUID id;
+
     private String nome;
+
 
     @Builder.Default
     @JsonIgnore
@@ -27,5 +31,18 @@ public class GrupoVO implements Serializable, Comparable<GrupoVO> {
     @Override
     public int compareTo(GrupoVO o) {
         return nome.compareTo(o.getNome());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GrupoVO grupoVO = (GrupoVO) o;
+        return Objects.equals(id, grupoVO.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

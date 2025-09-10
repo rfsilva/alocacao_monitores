@@ -17,8 +17,8 @@ public class MonitoresController {
     private MonitoresService monitoresService;
 
     @GetMapping("/alocacao")
-    public ResponseEntity<List<AlocacaoDTO>> distribuir() {
-        List<AlocacaoDTO> alocacoes = monitoresService.distribuir();
+    public ResponseEntity<List<AlocacaoDTO>> distribuir(@RequestParam Boolean respeitarGrupoCandidato) {
+        List<AlocacaoDTO> alocacoes = monitoresService.distribuir(respeitarGrupoCandidato == null ? false : respeitarGrupoCandidato);
         return ResponseEntity.ok().body(alocacoes);
     }
 }
